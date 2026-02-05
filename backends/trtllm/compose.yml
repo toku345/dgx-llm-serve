@@ -1,0 +1,22 @@
+services:
+  trtllm-serve:
+    image: nvcr.io/nvidia/tensorrt-llm/release:latest
+    container_name: trtllm-qwen3-30b
+    command: trtllm-serve nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/model_weights:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    stdin_open: true
+    tty: true

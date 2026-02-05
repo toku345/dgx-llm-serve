@@ -1,0 +1,146 @@
+x-common: &common
+  image: nvcr.io/nvidia/vllm:26.01-py3
+  restart: unless-stopped
+  ipc: host
+  ports:
+    - "8000:8000"
+  volumes:
+    - ${HOME}/model_weights:/app/model:ro
+  environment:
+    - NVIDIA_VISIBLE_DEVICES=all
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+    stack:
+      soft: 67108864
+      hard: 67108864
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 300s
+
+x-vllm-base-args: &vllm-base-args
+  - vllm
+  - serve
+  - --host
+  - "0.0.0.0"
+  - --port
+  - "8000"
+  - --tensor-parallel-size
+  - "1"
+  - --gpu-memory-utilization
+  - "0.9"
+  - --max-model-len
+  - "32768"
+  - --max-num-seqs
+  - "4"
+  - --max-num-batched-tokens
+  - "2048"
+  - --dtype
+  - auto
+  - --kv-cache-dtype
+  - auto
+
+services:
+  vllm-qwen:
+    <<: *common
+    profiles: ["qwen"]
+    command:
+      - vllm
+      - serve
+      - /app/model/Qwen/Qwen3-Coder-30B-A3B-Instruct
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - Qwen/Qwen3-Coder-30B-A3B-Instruct
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --enable-auto-tool-choice
+      - --tool-call-parser
+      - qwen3_coder
+
+  vllm-nemotron:
+    <<: *common
+    profiles: ["nemotron"]
+    command:
+      - vllm
+      - serve
+      - /app/model/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --trust-remote-code
+      - --enforce-eager
+
+  vllm-nemotron-vl:
+    <<: *common
+    profiles: ["nemotron-vl"]
+    command:
+      - vllm
+      - serve
+      - /app/model/nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --limit-mm-per-prompt
+      - image=1
+      - --trust-remote-code
+      - --enforce-eager
