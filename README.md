@@ -1,6 +1,17 @@
 # dgx-llm-serve
 
-DGX Spark OEM機向け LLM 推論バックエンドの Docker Compose 設定を統合管理するリポジトリ。
+[NVIDIA DGX Spark](https://marketplace.nvidia.com/en-us/enterprise/personal-ai-supercomputers/dgx-spark/) および OEM 機向けの LLM 推論バックエンド設定集。
+
+> **注意**: 本リポジトリは DGX Spark / OEM 機専用です。他の環境での動作は想定していません。
+
+## 対象ハードウェア
+
+- [NVIDIA DGX Spark](https://marketplace.nvidia.com/en-us/enterprise/personal-ai-supercomputers/dgx-spark/)
+- OEM 機（[Lenovo ThinkStation PGX](https://www.lenovo.com/us/en/p/workstations/thinkstation-p-series/lenovo-thinkstation-pgx-sff/30kl0002us) 等）
+
+### 動作確認環境
+
+- Lenovo ThinkStation PGX
 
 ## バックエンド一覧
 
@@ -12,7 +23,7 @@ DGX Spark OEM機向け LLM 推論バックエンドの Docker Compose 設定を�
 
 ## 前提条件
 
-- NVIDIA GPU（VRAM 24GB 以上推奨）
+- DGX Spark または OEM 機（GB10 Grace Blackwell）
 - Docker + Docker Compose
 - NVIDIA Container Toolkit
 - モデルウェイト: `~/model_weights/` に配置（NIM を除く）
