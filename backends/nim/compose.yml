@@ -2,7 +2,7 @@ services:
   nim:
     image: nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.1.0-variant
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - NGC_API_KEY=${NGC_API_KEY}
     volumes:

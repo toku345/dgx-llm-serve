@@ -4,7 +4,7 @@ services:
     container_name: trtllm-qwen3-30b
     command: trtllm-serve nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ~/model_weights:/root/.cache/huggingface
     deploy:

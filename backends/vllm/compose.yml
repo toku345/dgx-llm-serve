@@ -3,7 +3,7 @@ x-common: &common
   restart: unless-stopped
   ipc: host
   ports:
-    - "8000:8000"
+    - "127.0.0.1:8000:8000"
   volumes:
     - ${HOME}/model_weights:/app/model:ro
   environment:
