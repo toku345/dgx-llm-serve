@@ -31,7 +31,7 @@ echo "$NGC_API_KEY" | docker login nvcr.io --username '$oauthtoken' --password-s
 
 ```bash
 mkdir -p ~/.cache/nim
-chmod -R a+w ~/.cache/nim
+chmod -R 700 ~/.cache/nim
 ```
 
 ## 起動
