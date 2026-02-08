@@ -37,6 +37,9 @@ cd backends/trtllm && docker compose up
 # vLLM (Qwen3-Coder)
 cd backends/vllm && docker compose --profile qwen up
 
+# vLLM マルチモデル (Qwen3-Coder + Nemotron を単一ポートで同時起動)
+cd backends/vllm && docker compose --profile multi up
+
 # NVIDIA NIM (Qwen3-32B)
 cd backends/nim && docker compose up
 ```
