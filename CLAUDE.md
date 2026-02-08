@@ -11,7 +11,7 @@ DGX Spark OEM機向け LLM 推論バックエンド（TensorRT-LLM, vLLM, NVIDIA
 ```
 dgx-llm-serve/
 ├── backends/
-│   ├── trtllm/    # TensorRT-LLM (Qwen3-30B-A3B-FP4)
+│   ├── trtllm/    # TensorRT-LLM (Qwen3-FP4, Nemotron-NVFP4)
 │   ├── vllm/      # vLLM (Qwen3-Coder, Nemotron, Nemotron-VL)
 │   └── nim/       # NVIDIA NIM (DGX Spark 向け)
 ├── docs/          # 共通ドキュメント
@@ -23,13 +23,16 @@ dgx-llm-serve/
 ### サーバー起動
 
 ```bash
-# TensorRT-LLM
-cd backends/trtllm && docker compose up
+# TensorRT-LLM (プロファイル選択)
+cd backends/trtllm && docker compose --profile qwen up
+cd backends/trtllm && docker compose --profile nemotron up
+cd backends/trtllm && docker compose --profile multi up
 
 # vLLM (プロファイル選択)
 cd backends/vllm && docker compose --profile qwen up
 cd backends/vllm && docker compose --profile nemotron up
 cd backends/vllm && docker compose --profile nemotron-vl up
+cd backends/vllm && docker compose --profile multi up
 
 # NVIDIA NIM
 cd backends/nim && docker compose up
@@ -52,6 +55,9 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ## バックエンド固有の注意事項
 
 ### TensorRT-LLM
+- イメージ: `1.3.0rc2` (ARM64 対応)
+- Nemotron: `--backend _autodeploy` + `compile_backend: torch-cudagraph` (Mamba SSM 互換)
+- multi プロファイル: `qwen_multi.yaml` で KV キャッシュ制限必須（デフォルトだと OOM）
 - Thinking モード: デフォルトで有効。`/no_think` をシステムプロンプトに追加で無効化
 - クライアント側で `<think>...</think>` タグの除去が必要
 
