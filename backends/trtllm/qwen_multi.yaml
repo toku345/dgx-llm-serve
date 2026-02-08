@@ -1,0 +1,8 @@
+# Qwen3-30B-A3B-FP4 用 TRT-LLM 設定（multi プロファイル向け）
+# Nemotron と同居するためメモリ使用量を制限
+
+max_batch_size: 4
+max_seq_len: 32768
+
+kv_cache_config:
+  free_gpu_memory_fraction: 0.30

@@ -17,7 +17,7 @@
 
 | バックエンド | 技術 | 対応モデル | 特徴 |
 |-------------|------|-----------|------|
-| [trtllm](backends/trtllm/) | TensorRT-LLM | Qwen3-30B-A3B-FP4 | Thinking モード対応 |
+| [trtllm](backends/trtllm/) | TensorRT-LLM | Qwen3-FP4, Nemotron-NVFP4 | マルチモデル同時起動対応 |
 | [vllm](backends/vllm/) | vLLM | Qwen3-Coder, Nemotron, Nemotron-VL | ツール呼び出し対応 |
 | [nim](backends/nim/) | NVIDIA NIM | Qwen3-32B, Llama-3.1-8B, Nemotron-Nano | NGC マネージドイメージ |
 
@@ -31,8 +31,11 @@
 ## クイックスタート
 
 ```bash
-# TensorRT-LLM (Qwen3-30B)
-cd backends/trtllm && docker compose up
+# TensorRT-LLM (Qwen3-FP4 単独)
+cd backends/trtllm && docker compose --profile qwen up
+
+# TRT-LLM マルチモデル (Qwen3-FP4 + Nemotron-NVFP4 を単一ポートで同時起動)
+cd backends/trtllm && docker compose --profile multi up
 
 # vLLM (Qwen3-Coder)
 cd backends/vllm && docker compose --profile qwen up
@@ -89,6 +92,6 @@ ports:
 
 ### リモートコード実行に関する注意
 
-vLLM の Nemotron モデル（`--trust-remote-code` フラグ）は HuggingFace からのコード実行を許可しています:
+vLLM / TRT-LLM の Nemotron モデル（`--trust-remote-code` / `--trust_remote_code` フラグ）は HuggingFace からのコード実行を許可しています:
 - サプライチェーン攻撃のリスクが存在します
 - モデル初回ダウンロード時に `~/.cache/huggingface` 内のコードを確認することを推奨します

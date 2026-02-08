@@ -29,28 +29,6 @@ x-common: &common
     retries: 3
     start_period: 300s
 
-x-vllm-base-args: &vllm-base-args
-  - vllm
-  - serve
-  - --host
-  - "0.0.0.0"
-  - --port
-  - "8000"
-  - --tensor-parallel-size
-  - "1"
-  - --gpu-memory-utilization
-  - "0.9"
-  - --max-model-len
-  - "32768"
-  - --max-num-seqs
-  - "4"
-  - --max-num-batched-tokens
-  - "2048"
-  - --dtype
-  - auto
-  - --kv-cache-dtype
-  - auto
-
 services:
   vllm-qwen:
     <<: *common
@@ -100,6 +78,107 @@ services:
       - "1"
       - --gpu-memory-utilization
       - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --trust-remote-code
+      - --enforce-eager
+
+  # --- multi プロファイル: Qwen3-Coder + Nemotron 同時起動 ---
+
+  vllm-multi-proxy:
+    image: openresty/openresty:alpine
+    profiles: ["multi"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+    depends_on:
+      vllm-multi-qwen:
+        condition: service_healthy
+      vllm-multi-nemotron:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  vllm-multi-qwen:
+    <<: *common
+    # Qwen3MoE は vLLM 0.8.4+ 対応。CUDA 13.0.2 ネイティブで Forward Compat 不要
+    image: nvcr.io/nvidia/vllm:25.11-py3
+    profiles: ["multi"]
+    ports: []
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s
+    command:
+      - vllm
+      - serve
+      - /app/model/Qwen/Qwen3-Coder-30B-A3B-Instruct
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - Qwen/Qwen3-Coder-30B-A3B-Instruct
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.50"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --enforce-eager
+
+  vllm-multi-nemotron:
+    <<: *common
+    # NemotronH + NVFP4 は 26.01 必須。ドライバ 580 では Forward Compat を独占使用
+    profiles: ["multi"]
+    ports: []
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s
+    depends_on:
+      vllm-multi-qwen:
+        condition: service_healthy
+    command:
+      - vllm
+      - serve
+      - /app/model/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.25"
       - --max-model-len
       - "32768"
       - --max-num-seqs
