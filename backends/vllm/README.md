@@ -34,8 +34,8 @@ docker compose --profile multi up
 
 | モデル | GPU メモリ | ルーティング条件 |
 |--------|-----------|-----------------|
-| Qwen3-Coder-30B-A3B (bf16) | 55% | `model` に "qwen" を含む |
-| Nemotron-30B-A3B (NVFP4) | 35% | `model` に "nemotron" を含む |
+| Qwen3-Coder-30B-A3B (bf16) | 50% | `model` に "qwen" を含む |
+| Nemotron-30B-A3B (NVFP4) | 25% | `model` に "nemotron" を含む |
 
 ```bash
 # 利用可能なモデル一覧
