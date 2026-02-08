@@ -1,0 +1,11 @@
+# Nemotron-3-Nano-30B-A3B-NVFP4 用 TRT-LLM 設定
+# 1.3.0rc2 AutoDeploy 構成
+
+max_batch_size: 4
+max_seq_len: 32768
+
+# torch-compile は Mamba SSM のメタカーネルにバグがあるため cudagraph を使用
+compile_backend: torch-cudagraph
+
+kv_cache_config:
+  free_gpu_memory_fraction: 0.60

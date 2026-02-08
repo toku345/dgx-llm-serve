@@ -1,22 +1,105 @@
+x-common: &common
+  image: nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc2
+  restart: unless-stopped
+  ipc: host
+  ports:
+    - "127.0.0.1:8000:8000"
+  volumes:
+    - ~/model_weights:/app/model:ro
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  ulimits:
+    memlock: -1
+    stack: 67108864
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 300s
+
 services:
-  trtllm-serve:
-    image: nvcr.io/nvidia/tensorrt-llm/release:latest
-    container_name: trtllm-qwen3-30b
-    command: trtllm-serve nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
+  trtllm-qwen:
+    <<: *common
+    profiles: ["qwen"]
+    command: trtllm-serve /app/model/nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
+
+  trtllm-nemotron:
+    <<: *common
+    profiles: ["nemotron"]
+    command:
+      - trtllm-serve
+      - /app/model/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --backend
+      - _autodeploy
+      - --trust_remote_code
+      - --extra_llm_api_options
+      - /app/config/nano_v3.yaml
+      - --host
+      - "0.0.0.0"
+    volumes:
+      - ~/model_weights:/app/model:ro
+      - ./nano_v3.yaml:/app/config/nano_v3.yaml:ro
+
+  # --- multi プロファイル: Qwen3-FP4 + Nemotron-NVFP4 同時起動 ---
+
+  trtllm-multi-proxy:
+    image: openresty/openresty:alpine
+    profiles: ["multi"]
+    restart: unless-stopped
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      - ~/model_weights:/root/.cache/huggingface
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    ipc: host
-    ulimits:
-      memlock: -1
-      stack: 67108864
-    stdin_open: true
-    tty: true
+      - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+    depends_on:
+      trtllm-multi-qwen:
+        condition: service_healthy
+      trtllm-multi-nemotron:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  trtllm-multi-qwen:
+    <<: *common
+    profiles: ["multi"]
+    ports: []
+    command:
+      - trtllm-serve
+      - /app/model/nvidia/Qwen3-30B-A3B-FP4
+      - --extra_llm_api_options
+      - /app/config/qwen_multi.yaml
+      - --host
+      - "0.0.0.0"
+    volumes:
+      - ~/model_weights:/app/model:ro
+      - ./qwen_multi.yaml:/app/config/qwen_multi.yaml:ro
+
+  trtllm-multi-nemotron:
+    <<: *common
+    profiles: ["multi"]
+    ports: []
+    depends_on:
+      trtllm-multi-qwen:
+        condition: service_healthy
+    command:
+      - trtllm-serve
+      - /app/model/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+      - --backend
+      - _autodeploy
+      - --trust_remote_code
+      - --extra_llm_api_options
+      - /app/config/nano_v3.yaml
+      - --host
+      - "0.0.0.0"
+    volumes:
+      - ~/model_weights:/app/model:ro
+      - ./nano_v3.yaml:/app/config/nano_v3.yaml:ro
