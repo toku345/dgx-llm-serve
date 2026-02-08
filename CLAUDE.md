@@ -65,6 +65,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - ツール呼び出し対応（Qwen3-Coder）
 - 内部プロンプト確認: `echo: true` パラメータを使用
 - 設定パラメータ: `--gpu-memory-utilization 0.9`, `--max-model-len 32768`
+- multi プロファイル: Qwen (25.11) + Nemotron (26.01) で異なるイメージ。ツール呼び出しは multi では無効
 
 ### NIM
 - モデルはコンテナイメージに含まれる（ホスト側マウント不要）
