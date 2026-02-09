@@ -75,6 +75,8 @@ services:
     command:
       - trtllm-serve
       - /app/model/nvidia/Qwen3-30B-A3B-FP4
+      - --backend
+      - _autodeploy
       - --extra_llm_api_options
       - /app/config/qwen_multi.yaml
       - --host

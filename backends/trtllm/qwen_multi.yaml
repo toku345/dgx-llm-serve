@@ -4,5 +4,8 @@
 max_batch_size: 4
 max_seq_len: 32768
 
+# SM120 cutlass MoE カーネルの illegal instruction 回避
+compile_backend: torch-cudagraph
+
 kv_cache_config:
   free_gpu_memory_fraction: 0.30
