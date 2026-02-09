@@ -55,7 +55,8 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | ファイル | 対象 | 用途 |
 |----------|------|------|
 | `nano_v3.yaml` | Nemotron (全プロファイル) | AutoDeploy 設定、`compile_backend: torch-cudagraph` |
-| `qwen_multi.yaml` | Qwen (multi のみ) | KV キャッシュメモリ制限 (`free_gpu_memory_fraction: 0.30`) |
+| `qwen.yaml` | Qwen (standalone のみ) | AutoDeploy 設定、`compile_backend: torch-cudagraph` |
+| `qwen_multi.yaml` | Qwen (multi のみ) | KV キャッシュメモリ制限、`compile_backend: torch-cudagraph` |
 | `nginx.conf` | Proxy (multi のみ) | モデル名ベースのリクエストルーティング |
 
 ### トラブルシューティング
@@ -87,6 +88,11 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ```
 
 thinking モード使用時は、クライアント側でレスポンスから `<think>...</think>` タグを除去する必要があります。
+
+### Nemotron Reasoning Parser
+
+Nemotron は `--reasoning_parser deepseek-r1` により、思考過程をサーバー側で分離します。
+レスポンスの `reasoning_content` フィールドに思考過程、`content` フィールドに最終回答が返されます。
 
 ## 環境要件
 

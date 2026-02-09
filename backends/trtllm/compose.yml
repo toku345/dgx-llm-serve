@@ -4,8 +4,6 @@ x-common: &common
   ipc: host
   ports:
     - "127.0.0.1:8000:8000"
-  volumes:
-    - ~/model_weights:/app/model:ro
   deploy:
     resources:
       reservations:
@@ -27,7 +25,18 @@ services:
   trtllm-qwen:
     <<: *common
     profiles: ["qwen"]
-    command: trtllm-serve /app/model/nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
+    command:
+      - trtllm-serve
+      - /app/model/nvidia/Qwen3-30B-A3B-FP4
+      - --backend
+      - _autodeploy
+      - --extra_llm_api_options
+      - /app/config/qwen.yaml
+      - --host
+      - "0.0.0.0"
+    volumes:
+      - ~/model_weights:/app/model:ro
+      - ./qwen.yaml:/app/config/qwen.yaml:ro
 
   trtllm-nemotron:
     <<: *common
@@ -38,6 +47,8 @@ services:
       - --backend
       - _autodeploy
       - --trust_remote_code
+      - --reasoning_parser
+      - deepseek-r1
       - --extra_llm_api_options
       - /app/config/nano_v3.yaml
       - --host
@@ -75,6 +86,8 @@ services:
     command:
       - trtllm-serve
       - /app/model/nvidia/Qwen3-30B-A3B-FP4
+      - --backend
+      - _autodeploy
       - --extra_llm_api_options
       - /app/config/qwen_multi.yaml
       - --host
@@ -96,6 +109,8 @@ services:
       - --backend
       - _autodeploy
       - --trust_remote_code
+      - --reasoning_parser
+      - deepseek-r1
       - --extra_llm_api_options
       - /app/config/nano_v3.yaml
       - --host
