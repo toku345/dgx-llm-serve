@@ -55,7 +55,8 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | ファイル | 対象 | 用途 |
 |----------|------|------|
 | `nano_v3.yaml` | Nemotron (全プロファイル) | AutoDeploy 設定、`compile_backend: torch-cudagraph` |
-| `qwen_multi.yaml` | Qwen (multi のみ) | KV キャッシュメモリ制限 (`free_gpu_memory_fraction: 0.30`) |
+| `qwen.yaml` | Qwen (standalone のみ) | AutoDeploy 設定、`compile_backend: torch-cudagraph` |
+| `qwen_multi.yaml` | Qwen (multi のみ) | KV キャッシュメモリ制限、`compile_backend: torch-cudagraph` |
 | `nginx.conf` | Proxy (multi のみ) | モデル名ベースのリクエストルーティング |
 
 ### トラブルシューティング
