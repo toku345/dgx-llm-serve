@@ -1,5 +1,9 @@
 # Qwen3-30B-A3B-FP4 用 TRT-LLM 設定（単体プロファイル向け）
 
+# デフォルト (max_batch_size=2048) では flashinfer workspace buffer が不足するため制限
+max_batch_size: 32
+max_seq_len: 32768
+
 # SM120 cutlass MoE カーネルの illegal instruction 回避
 # --backend _autodeploy 使用時のみ有効
 compile_backend: torch-cudagraph
