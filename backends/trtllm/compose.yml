@@ -27,7 +27,18 @@ services:
   trtllm-qwen:
     <<: *common
     profiles: ["qwen"]
-    command: trtllm-serve /app/model/nvidia/Qwen3-30B-A3B-FP4 --host 0.0.0.0
+    command:
+      - trtllm-serve
+      - /app/model/nvidia/Qwen3-30B-A3B-FP4
+      - --backend
+      - _autodeploy
+      - --extra_llm_api_options
+      - /app/config/qwen.yaml
+      - --host
+      - "0.0.0.0"
+    volumes:
+      - ~/model_weights:/app/model:ro
+      - ./qwen.yaml:/app/config/qwen.yaml:ro
 
   trtllm-nemotron:
     <<: *common

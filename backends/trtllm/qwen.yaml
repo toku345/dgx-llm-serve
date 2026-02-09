@@ -1,0 +1,5 @@
+# Qwen3-30B-A3B-FP4 用 TRT-LLM 設定（単体プロファイル向け）
+
+# SM120 cutlass MoE カーネルの illegal instruction 回避
+# --backend _autodeploy 使用時のみ有効
+compile_backend: torch-cudagraph
