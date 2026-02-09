@@ -84,5 +84,5 @@ function removeThinking(response) {
 
 ## 備考
 
-- trtllm-serve は現時点で `--reasoning_parser` オプション未対応
-- Thinking タグの自動除去はクライアント側で実装が必要
+- Nemotron: `--reasoning_parser deepseek-r1` で思考過程が `reasoning_content` フィールドに分離される
+- Qwen3: Thinking タグの除去はクライアント側で実装が必要

@@ -49,6 +49,8 @@ services:
       - --backend
       - _autodeploy
       - --trust_remote_code
+      - --reasoning_parser
+      - deepseek-r1
       - --extra_llm_api_options
       - /app/config/nano_v3.yaml
       - --host
@@ -109,6 +111,8 @@ services:
       - --backend
       - _autodeploy
       - --trust_remote_code
+      - --reasoning_parser
+      - deepseek-r1
       - --extra_llm_api_options
       - /app/config/nano_v3.yaml
       - --host

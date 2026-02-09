@@ -88,6 +88,11 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 thinking モード使用時は、クライアント側でレスポンスから `<think>...</think>` タグを除去する必要があります。
 
+### Nemotron Reasoning Parser
+
+Nemotron は `--reasoning_parser deepseek-r1` により、思考過程をサーバー側で分離します。
+レスポンスの `reasoning_content` フィールドに思考過程、`content` フィールドに最終回答が返されます。
+
 ## 環境要件
 
 - NVIDIA GPU + nvidia-container-toolkit
