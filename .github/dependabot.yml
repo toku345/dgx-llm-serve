@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # backends/trtllm の Docker イメージ
+  - package-ecosystem: "docker-compose"
+    directory: "/backends/trtllm"
+    schedule:
+      interval: "weekly"
+
+  # backends/vllm の Docker イメージ
+  - package-ecosystem: "docker-compose"
+    directory: "/backends/vllm"
+    schedule:
+      interval: "weekly"
+
+  # backends/nim の Docker イメージ
+  - package-ecosystem: "docker-compose"
+    directory: "/backends/nim"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions（将来追加された場合に備える）
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
