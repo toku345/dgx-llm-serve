@@ -17,9 +17,3 @@ updates:
     directory: "/backends/nim"
     schedule:
       interval: "weekly"
-
-  # GitHub Actions（将来追加された場合に備える）
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
