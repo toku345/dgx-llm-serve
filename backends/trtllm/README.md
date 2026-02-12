@@ -66,6 +66,17 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - **Nemotron 起動失敗**: `nano_v3.yaml` の `free_gpu_memory_fraction` を調整してください
 - **multi で OOM**: `qwen_multi.yaml` の `free_gpu_memory_fraction` を下げてください
 
+### 既知の問題: SM120 `cudaErrorIllegalInstruction`
+
+DGX Spark (SM120 / Blackwell) の multi プロファイルで、Qwen3-FP4 のサンプリング処理中に `cudaErrorIllegalInstruction` が散発します。
+
+- **原因**: TRT-LLM 1.3.0rc2 の cutlass MoE カーネルが SM120 で不正命令を実行する
+- **ワークアラウンド**: `--backend _autodeploy` + `compile_backend: torch-cudagraph` で軽減（設定済み）。ただし完全には回避できず、特定の推論パターンでサンプラー内のカーネルが失敗する場合がある
+- **影響**: エラー発生後、エグゼキューターのイベントループがクラッシュし以降のリクエストは処理不可能になる。**ただし `/health` は 200 を返し続ける**ため、オーケストレーションシステムが障害を検出できない。コンテナの手動再起動が必要
+- **監視の推奨**: `/health` だけでは障害を検知できないため、定期的に実際の推論リクエストを送信するライブネスチェックの実装を推奨する（例: 軽量な chat/completions リクエストのタイムアウト監視）
+- **対策**: `free_gpu_memory_fraction` を低めに維持してメモリ圧迫を軽減する（Qwen: 0.30、Nemotron: 0.50）。根本解決は TRT-LLM の SM120 カーネル修正またはドライバ 590+ へのアップデート待ち
+- **vLLM での代替不可**: Qwen3-FP4 (NVFP4) は vLLM 26.01 の NVIDIA コンテナで単体動作を確認済みだが、ドライバ 580 の Forward Compat 制約により 26.01 コンテナは同時 1 つまでのため、multi 構成では Nemotron (同じく 26.01 必須) と共存できない
+
 ## Thinking モード
 
 Qwen3 はデフォルトで **thinking モード（有効）** で動作します。レスポンスに `<think>` タグで思考プロセスが含まれます。

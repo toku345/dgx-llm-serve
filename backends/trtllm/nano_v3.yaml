@@ -8,4 +8,4 @@ max_seq_len: 32768
 compile_backend: torch-cudagraph
 
 kv_cache_config:
-  free_gpu_memory_fraction: 0.60
+  free_gpu_memory_fraction: 0.50
