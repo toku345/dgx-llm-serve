@@ -58,6 +58,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - イメージ: `1.3.0rc2` (ARM64 対応)
 - Nemotron: `--backend _autodeploy` + `compile_backend: torch-cudagraph` (Mamba SSM 互換)
 - multi プロファイル: `qwen_multi.yaml` で KV キャッシュ制限必須（デフォルトだと OOM）
+- SM120 既知問題: `cudaErrorIllegalInstruction` が multi で散発する（`compile_backend: torch-cudagraph` で軽減されるが完全には回避不可）
 - Thinking モード: デフォルトで有効。`/no_think` をシステムプロンプトに追加で無効化
 - クライアント側で `<think>...</think>` タグの除去が必要
 
@@ -66,6 +67,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - 内部プロンプト確認: `echo: true` パラメータを使用
 - 設定パラメータ: `--gpu-memory-utilization 0.9`, `--max-model-len 32768`
 - multi プロファイル: Qwen (25.11) + Nemotron (26.01) で異なるイメージ。ツール呼び出しは multi では無効
+- Forward Compat 制約: ドライバ 580 では 26.01 (CUDA 13.1) コンテナは同時 1 つまで。26.01 × 2 は不可
 
 ### NIM
 - モデルはコンテナイメージに含まれる（ホスト側マウント不要）

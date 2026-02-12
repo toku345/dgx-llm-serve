@@ -59,6 +59,14 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - **GPU OOM**: `--gpu-memory-utilization` を各サービスで調整してください
 - **ツール呼び出し**: multi プロファイルでは Qwen3-Coder のツール呼び出し（`--tool-call-parser`）は無効です。ドライバ 590+ に更新後、両サービスを 26.01 イメージに統一すると有効化できます
 
+### Forward Compat 制約（ドライバ 580）
+
+ドライバ 580 は CUDA 13.0.2 をネイティブサポートし、CUDA 13.1 (26.01) は Forward Compat で **1 コンテナのみ** 同時実行可能です。
+
+- multi プロファイルは Qwen (25.11 / CUDA 13.0.2) + Nemotron (26.01 / CUDA 13.1) の組み合わせでこの制約を回避しています
+- 26.01 × 2 コンテナ（例: Qwen3-FP4 + Nemotron）は、Nemotron の flashinfer CUTLASS バックエンド初期化に失敗するため **不可**
+- ドライバ 590+ へのアップデートにより CUDA 13.1 がネイティブ対応になれば、この制約は解消される見込み
+
 ## 設定パラメータ
 
 | パラメータ | 値 | 説明 |
