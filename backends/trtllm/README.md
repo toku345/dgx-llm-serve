@@ -55,7 +55,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | ファイル | 対象 | 用途 |
 |----------|------|------|
 | `nano_v3.yaml` | Nemotron (全プロファイル) | AutoDeploy 設定、`compile_backend: torch-cudagraph` |
-| `qwen.yaml` | Qwen (standalone のみ) | AutoDeploy 設定 |
+| `qwen.yaml` | Qwen (standalone のみ) | バッチサイズ制限（flashinfer buffer 不足回避） |
 | `qwen_multi.yaml` | Qwen (multi のみ) | KV キャッシュメモリ制限 |
 | `nginx.conf` | Proxy (multi のみ) | モデル名ベースのリクエストルーティング |
 
@@ -68,7 +68,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ### 解決済み: SM120 `cudaErrorIllegalInstruction`
 
-TRT-LLM 1.3.0rc2 以前では、DGX Spark (SM120 / Blackwell) の multi プロファイルで Qwen3-FP4 のサンプリング処理中に `cudaErrorIllegalInstruction` が散発していました。
+TRT-LLM 1.3.0rc2 以前では、DGX Spark (SM120 / Blackwell) で Qwen3-FP4 の cutlass MoE カーネルが `cudaErrorIllegalInstruction` を発生させていました（multi プロファイルで顕著）。
 
 1.3.0rc3 の CuteDSL FP8 GEMM for Blackwell により解消。`compile_backend: torch-cudagraph` ワークアラウンドは Qwen 設定から削除済みです（Nemotron は Mamba SSM メタカーネルバグ回避のため維持）。
 
