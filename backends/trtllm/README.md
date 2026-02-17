@@ -1,6 +1,6 @@
 # TRT-LLM Backend
 
-TensorRT-LLM (`1.3.0rc2`) を使用した LLM サービング環境。
+TensorRT-LLM (`1.3.0rc3`) を使用した LLM サービング環境。
 
 ## 対応モデル
 
@@ -70,7 +70,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 DGX Spark (SM120 / Blackwell) の multi プロファイルで、Qwen3-FP4 のサンプリング処理中に `cudaErrorIllegalInstruction` が散発します。
 
-- **原因**: TRT-LLM 1.3.0rc2 の cutlass MoE カーネルが SM120 で不正命令を実行する
+- **原因**: TRT-LLM 1.3.0rc3 の cutlass MoE カーネルが SM120 で不正命令を実行する
 - **ワークアラウンド**: `--backend _autodeploy` + `compile_backend: torch-cudagraph` で軽減（設定済み）。ただし完全には回避できず、特定の推論パターンでサンプラー内のカーネルが失敗する場合がある
 - **影響**: エラー発生後、エグゼキューターのイベントループがクラッシュし以降のリクエストは処理不可能になる。**ただし `/health` は 200 を返し続ける**ため、オーケストレーションシステムが障害を検出できない。コンテナの手動再起動が必要
 - **監視の推奨**: `/health` だけでは障害を検知できないため、定期的に実際の推論リクエストを送信するライブネスチェックの実装を推奨する（例: 軽量な chat/completions リクエストのタイムアウト監視）
