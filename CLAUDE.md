@@ -58,7 +58,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - イメージ: `1.3.0rc3` (ARM64 対応)
 - Nemotron: `--backend _autodeploy` + `compile_backend: torch-cudagraph` (Mamba SSM 互換)
 - multi プロファイル: `qwen_multi.yaml` で KV キャッシュ制限必須（デフォルトだと OOM）
-- SM120 既知問題: `cudaErrorIllegalInstruction` が multi で散発する（`compile_backend: torch-cudagraph` で軽減されるが完全には回避不可）
+- SM120 `cudaErrorIllegalInstruction`: 1.3.0rc3 で解消済み。Qwen の `compile_backend: torch-cudagraph` は削除済み
 - Thinking モード: デフォルトで有効。`/no_think` をシステムプロンプトに追加で無効化
 - クライアント側で `<think>...</think>` タグの除去が必要
 
