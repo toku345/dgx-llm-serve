@@ -17,3 +17,15 @@ updates:
     directory: "/backends/nim"
     schedule:
       interval: "weekly"
+
+  # Python パッケージ (uv)
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
