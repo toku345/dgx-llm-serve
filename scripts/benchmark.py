@@ -25,15 +25,16 @@ DEFAULT_CONCURRENCY = [1]
 DEFAULT_INPUT_TOKENS = 200
 DEFAULT_OUTPUT_TOKENS = 200
 DEFAULT_NUM_REQUESTS = 10
+DEFAULT_TIMEOUT = 600
 
 
 def _parse_concurrency(value: str) -> list[int]:
     try:
         levels = [int(c) for c in value.split(",")]
-    except ValueError:
+    except ValueError as err:
         raise argparse.ArgumentTypeError(
             f"Invalid concurrency value: {value!r} (expected comma-separated integers)"
-        )
+        ) from err
     if any(c <= 0 for c in levels):
         raise argparse.ArgumentTypeError("Concurrency levels must be positive integers")
     return levels
@@ -89,7 +90,12 @@ def run_benchmark(
             num_requests=num_requests,
         )
 
-        result = subprocess.run(cmd, check=False)
+        try:
+            result = subprocess.run(cmd, check=False, timeout=DEFAULT_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            print("[ERROR] aiperf timed out", file=sys.stderr)
+            all_ok = False
+            continue
         if result.returncode != 0:
             print(f"[ERROR] aiperf exited with code {result.returncode}", file=sys.stderr)
             all_ok = False
