@@ -27,6 +27,18 @@ DEFAULT_OUTPUT_TOKENS = 200
 DEFAULT_NUM_REQUESTS = 10
 
 
+def _parse_concurrency(value: str) -> list[int]:
+    try:
+        levels = [int(c) for c in value.split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid concurrency value: {value!r} (expected comma-separated integers)"
+        )
+    if any(c <= 0 for c in levels):
+        raise argparse.ArgumentTypeError("Concurrency levels must be positive integers")
+    return levels
+
+
 def build_aiperf_cmd(
     *,
     model: str,
@@ -58,7 +70,8 @@ def run_benchmark(
     input_tokens: int,
     output_tokens: int,
     num_requests: int,
-) -> None:
+) -> bool:
+    all_ok = True
     for concurrency in concurrency_levels:
         print(f"\n{'='*60}")
         print(f"Model: {model}")
@@ -79,6 +92,8 @@ def run_benchmark(
         result = subprocess.run(cmd, check=False)
         if result.returncode != 0:
             print(f"[ERROR] aiperf exited with code {result.returncode}", file=sys.stderr)
+            all_ok = False
+    return all_ok
 
 
 def parse_args() -> argparse.Namespace:
@@ -98,7 +113,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--concurrency", "-c",
-        default=",".join(str(c) for c in DEFAULT_CONCURRENCY),
+        type=_parse_concurrency,
+        default=DEFAULT_CONCURRENCY,
         help="Comma-separated concurrency levels (default: 1)",
     )
     parser.add_argument(
@@ -124,16 +140,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    concurrency_levels = [int(c) for c in args.concurrency.split(",")]
-
-    run_benchmark(
+    ok = run_benchmark(
         model=args.model,
         port=args.port,
-        concurrency_levels=concurrency_levels,
+        concurrency_levels=args.concurrency,
         input_tokens=args.input_tokens,
         output_tokens=args.output_tokens,
         num_requests=args.num_requests,
     )
+    if not ok:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

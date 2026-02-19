@@ -3,4 +3,4 @@ name = "dgx-llm-serve"
 version = "0.1.0"
 description = "LLM inference backends for DGX Spark (TensorRT-LLM, vLLM, NVIDIA NIM)"
 requires-python = ">=3.13"
-dependencies = ["aiperf"]
+dependencies = ["aiperf>=0.5.0,<1.0"]
