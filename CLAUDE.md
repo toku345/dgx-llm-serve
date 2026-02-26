@@ -12,7 +12,7 @@ DGX Spark OEM機向け LLM 推論バックエンド（TensorRT-LLM, vLLM, NVIDIA
 dgx-llm-serve/
 ├── backends/
 │   ├── trtllm/    # TensorRT-LLM (Qwen3-FP4, Nemotron-NVFP4)
-│   ├── vllm/      # vLLM (Qwen3-Coder, Nemotron, Nemotron-VL)
+│   ├── vllm/      # vLLM (Qwen3-Coder, Qwen3.5, Nemotron, Nemotron-VL)
 │   └── nim/       # NVIDIA NIM (DGX Spark 向け)
 ├── docs/          # 共通ドキュメント
 └── scripts/       # ユーティリティスクリプト
@@ -30,6 +30,7 @@ cd backends/trtllm && docker compose --profile multi up
 
 # vLLM (プロファイル選択)
 cd backends/vllm && docker compose --profile qwen up
+cd backends/vllm && docker compose --profile qwen35 up
 cd backends/vllm && docker compose --profile nemotron up
 cd backends/vllm && docker compose --profile nemotron-vl up
 cd backends/vllm && docker compose --profile multi up
@@ -63,6 +64,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - クライアント側で `<think>...</think>` タグの除去が必要
 
 ### vLLM
+- Qwen3.5-35B-A3B-FP8: `qwen35` プロファイル。`--reasoning-parser qwen3` で thinking を `reasoning_content` に分離。`--language-model-only` でテキスト専用（ビジョンエンコーダーをスキップ）
 - ツール呼び出し対応（Qwen3-Coder）
 - 内部プロンプト確認: `echo: true` パラメータを使用
 - 設定パラメータ: `--gpu-memory-utilization 0.9`, `--max-model-len 32768`

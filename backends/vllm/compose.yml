@@ -61,6 +61,66 @@ services:
       - --tool-call-parser
       - qwen3_coder
 
+  vllm-qwen35:
+    # Qwen3.5 は vLLM upstream の専用イメージが必要（NGC 26.01 は transformers が古く qwen3_5_moe 未対応）
+    image: vllm/vllm-openai:qwen3_5-cu130
+    restart: unless-stopped
+    ipc: host
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ${HOME}/model_weights:/app/model:ro
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      stack:
+        soft: 67108864
+        hard: 67108864
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    profiles: ["qwen35"]
+    # ENTRYPOINT は ["vllm", "serve"] がプリセット済み
+    command:
+      - /app/model/Qwen/Qwen3.5-35B-A3B-FP8
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - Qwen/Qwen3.5-35B-A3B-FP8
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --enforce-eager
+      - --language-model-only
+      - --reasoning-parser
+      - qwen3
+
   vllm-nemotron:
     <<: *common
     profiles: ["nemotron"]
