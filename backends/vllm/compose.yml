@@ -61,6 +61,39 @@ services:
       - --tool-call-parser
       - qwen3_coder
 
+  vllm-qwen35:
+    <<: *common
+    # Qwen3.5 は vLLM upstream の専用イメージが必要（NGC 26.01 は transformers が古く qwen3_5_moe 未対応）
+    image: vllm/vllm-openai:qwen3_5-cu130
+    profiles: ["qwen35"]
+    # vllm/vllm-openai は ENTRYPOINT ["vllm", "serve"] がプリセット済みのため、command にはモデルパス以降のみ指定
+    command:
+      - /app/model/Qwen/Qwen3.5-35B-A3B-FP8
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - Qwen/Qwen3.5-35B-A3B-FP8
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.9"
+      - --max-model-len
+      - "32768"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --enforce-eager
+      - --language-model-only
+      - --reasoning-parser
+      - qwen3
+
   vllm-nemotron:
     <<: *common
     profiles: ["nemotron"]
