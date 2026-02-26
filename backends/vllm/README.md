@@ -7,7 +7,7 @@ vLLM を使用した LLM サービング環境。
 | プロファイル | モデル | 特徴 |
 |-------------|--------|------|
 | qwen | Qwen3-Coder-30B-A3B-Instruct | ツール呼び出し対応 |
-| qwen35 | Qwen3.5-35B-A3B-FP8 | Gated DeltaNet + MoE, FP8 量子化, thinking モード（reasoning_content 分離）, テキスト専用 |
+| qwen35 | Qwen3.5-35B-A3B-FP8 | Gated DeltaNet + MoE, FP8 量子化, thinking モード（reasoning_content 分離）, テキスト専用モード（ビジョン無効化） |
 | nemotron | NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 | 高速推論 |
 | nemotron-vl | NVIDIA-Nemotron-Nano-12B-v2-VL | マルチモーダル（画像対応）|
 | multi | Qwen3-Coder + Nemotron 同時起動 | OpenResty プロキシで単一ポート |

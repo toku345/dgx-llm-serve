@@ -64,7 +64,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 - クライアント側で `<think>...</think>` タグの除去が必要
 
 ### vLLM
-- Qwen3.5-35B-A3B-FP8: `qwen35` プロファイル。`--reasoning-parser qwen3` で thinking を `reasoning_content` に分離。`--language-model-only` でテキスト専用（ビジョンエンコーダーをスキップ）
+- Qwen3.5-35B-A3B-FP8: `qwen35` プロファイル。vLLM upstream イメージ使用（NGC 26.01 は `qwen3_5_moe` 未対応）。`--reasoning-parser qwen3` で thinking を `reasoning_content` に分離。`--language-model-only` でビジョンエンコーダーを無効化（テキスト専用モード）
 - ツール呼び出し対応（Qwen3-Coder）
 - 内部プロンプト確認: `echo: true` パラメータを使用
 - 設定パラメータ: `--gpu-memory-utilization 0.9`, `--max-model-len 32768`
