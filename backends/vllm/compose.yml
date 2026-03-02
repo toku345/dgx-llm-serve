@@ -63,8 +63,9 @@ services:
 
   vllm-qwen35:
     <<: *common
-    # Qwen3.5 は vLLM upstream の専用イメージが必要（NGC 26.01 は transformers が古く qwen3_5_moe 未対応）
-    image: vllm/vllm-openai:qwen3_5-cu130
+    # Qwen3.5 は vLLM upstream イメージが必要（NGC 26.01 は transformers が古く qwen3_5_moe 未対応）
+    # cu130-nightly は最新 Triton + PyTorch を含み、SM 12.1 の Gated DeltaNet FLA カーネル問題を回避
+    image: vllm/vllm-openai:cu130-nightly
     profiles: ["qwen35"]
     # vllm/vllm-openai は ENTRYPOINT ["vllm", "serve"] がプリセット済みのため、command にはモデルパス以降のみ指定
     command:
