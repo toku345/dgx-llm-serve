@@ -1,5 +1,5 @@
 x-common: &common
-  image: nvcr.io/nvidia/vllm:26.01-py3
+  image: nvcr.io/nvidia/vllm:26.02-py3
   restart: unless-stopped
   ipc: host
   ports:
@@ -150,7 +150,7 @@ services:
   vllm-multi-qwen:
     <<: *common
     # Qwen3MoE は vLLM 0.8.4+ 対応。CUDA 13.0.2 ネイティブで Forward Compat 不要
-    image: nvcr.io/nvidia/vllm:25.11-py3
+    image: nvcr.io/nvidia/vllm:26.02-py3
     profiles: ["multi"]
     ports: []
     healthcheck:
