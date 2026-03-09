@@ -67,7 +67,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 #   TRT-LLM:  nvidia/Qwen3-30B-A3B-FP4, nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
 #   vLLM:     Qwen/Qwen3-Coder-30B-A3B-Instruct, Qwen/Qwen3.5-35B-A3B-FP8
 #             nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4, nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
-#   NIM:      qwen3-32b-dgx-spark
+#   NIM:      Qwen/Qwen3-32B
 ```
 
 ### ベンチマーク
