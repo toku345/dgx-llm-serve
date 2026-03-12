@@ -65,7 +65,7 @@ services:
     <<: *common
     # Qwen3.5 は vLLM upstream イメージが必要（NGC 26.01 は transformers が古く qwen3_5_moe 未対応）
     # v0.17.0-cu130: nightly で必要だった修正（Triton/RMSNormGated）が安定版に含まれた
-    image: vllm/vllm-openai:v0.17.0-cu130
+    image: vllm/vllm-openai:v0.17.1-cu130
     profiles: ["qwen35"]
     # vllm/vllm-openai は ENTRYPOINT ["vllm", "serve"] がプリセット済みのため、command にはモデルパス以降のみ指定
     command:
