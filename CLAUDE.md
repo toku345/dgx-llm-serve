@@ -24,7 +24,7 @@ dgx-llm-serve/
 │   ├── trtllm/    # TensorRT-LLM (Qwen3-FP4, Nemotron-NVFP4)
 │   ├── vllm/      # vLLM (Qwen3-Coder, Qwen3.5, Nemotron, Nemotron-VL)
 │   └── nim/       # NVIDIA NIM (DGX Spark 向け)
-├── artifacts/     # ベンチマーク結果 (GenAI-Perf 出力)
+├── artifacts/     # ベンチマーク結果 (aiperf 出力)
 ├── docs/          # 共通ドキュメント
 └── scripts/       # ユーティリティスクリプト
 ```
@@ -73,8 +73,8 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ### ベンチマーク
 
 ```bash
-# GenAI-Perf によるベンチマーク（結果は artifacts/ に出力）
-cd scripts && python benchmark.py
+# aiperf によるベンチマーク（結果は artifacts/ に出力）
+uv run scripts/benchmark.py --model <MODEL_NAME>
 ```
 
 ## バックエンド固有の注意事項
