@@ -24,7 +24,7 @@ dgx-llm-serve/
 │   ├── trtllm/    # TensorRT-LLM (Qwen3-FP4, Nemotron-NVFP4)
 │   ├── vllm/      # vLLM (Qwen3-Coder, Qwen3.5, Nemotron, Nemotron-VL)
 │   └── nim/       # NVIDIA NIM (DGX Spark 向け)
-├── artifacts/     # ベンチマーク結果 (GenAI-Perf 出力)
+├── artifacts/     # ベンチマーク結果 (aiperf 出力)
 ├── docs/          # 共通ドキュメント
 └── scripts/       # ユーティリティスクリプト
 ```
@@ -73,8 +73,8 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ### ベンチマーク
 
 ```bash
-# GenAI-Perf によるベンチマーク（結果は artifacts/ に出力）
-cd scripts && python benchmark.py
+# aiperf によるベンチマーク（結果は artifacts/ に出力）
+uv run scripts/benchmark.py --model <MODEL_NAME>
 ```
 
 ## バックエンド固有の注意事項
@@ -88,7 +88,7 @@ cd scripts && python benchmark.py
 - クライアント側で `<think>...</think>` タグの除去が必要
 
 ### vLLM
-- Qwen3.5-35B-A3B-FP8: `qwen35` プロファイル。`vllm/vllm-openai:v0.17.0-cu130` 使用（NGC 26.01 は `qwen3_5_moe` 未対応）。`--reasoning-parser qwen3` で thinking を `reasoning_content` に分離。`--language-model-only` でビジョンエンコーダーを無効化（テキスト専用モード）。SM 12.1 では TRITON Fp8 MoE バックエンドが自動選択される
+- Qwen3.5-35B-A3B-FP8: `qwen35` プロファイル。`vllm/vllm-openai:v0.17.1-cu130` 使用（NGC 26.01 は `qwen3_5_moe` 未対応）。`--reasoning-parser qwen3` で thinking を `reasoning_content` に分離。`--language-model-only` でビジョンエンコーダーを無効化（テキスト専用モード）。SM 12.1 では TRITON Fp8 MoE バックエンドが自動選択される
 - ツール呼び出し対応（Qwen3-Coder）
 - 内部プロンプト確認: `echo: true` パラメータを使用
 - 設定パラメータ: `--gpu-memory-utilization 0.9`, `--max-model-len 32768`
