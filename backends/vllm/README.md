@@ -57,7 +57,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ## トラブルシューティング
 
-- **起動が遅い**: 初回は数分かかります。`docker logs vllm-vllm-qwen36-1 -f` で進捗確認
+- **起動が遅い**: 初回は数分かかります。`docker compose --profile qwen36 logs -f vllm-qwen36` で進捗確認
 - **GPU OOM**: `--gpu-memory-utilization` を 0.7 まで下げる、または `--max-model-len` を 65536 に縮小
 - **404 unknown model**: `model` フィールドに `Qwen/Qwen3.6-35B-A3B-FP8` を指定
 - **cuda capability 12.1 警告**: PyTorch 公式最大 12.0 を超過する警告が出るが、互換動作します

@@ -62,9 +62,30 @@ The answer is 4.
 
 ## クライアント側での処理
 
-Thinking モード使用時は、クライアント側でレスポンスから `<think>...</think>` タグを除去する必要がある。
+本リポジトリの qwen36 profile は起動時に `--reasoning-parser qwen3` を指定しているため、思考プロセスは自動的に **`reasoning_content` フィールド** に分離されて返る。通常のクライアントは `content` をそのまま使えばよく、`<think>...</think>` タグを手動で除去する必要はない。
 
-### Python での除去例
+### レスポンス構造
+
+```json
+{
+  "choices": [{
+    "message": {
+      "content": "The answer is 4.",
+      "reasoning_content": "The user is asking for a simple arithmetic calculation. 2 + 2 = 4"
+    }
+  }]
+}
+```
+
+### `<think>` タグの手動除去が必要になるケース
+
+以下のいずれかの場合のみ、クライアント側で生レスポンスからタグを除去する実装が必要。
+
+- vLLM を `--reasoning-parser qwen3` **なし** で起動したとき
+- 将来別モデルで reasoning parser が未対応だったとき
+
+<details>
+<summary>手動除去の参考実装</summary>
 
 ```python
 import re
@@ -74,15 +95,10 @@ def remove_thinking(response: str) -> str:
     return re.sub(r'<think>.*?</think>\s*', '', response, flags=re.DOTALL)
 ```
 
-### JavaScript での除去例
-
 ```javascript
 function removeThinking(response) {
   return response.replace(/<think>[\s\S]*?<\/think>\s*/g, '');
 }
 ```
 
-## 備考
-
-- Nemotron: `--reasoning_parser deepseek-r1` で思考過程が `reasoning_content` フィールドに分離される
-- Qwen3: Thinking タグの除去はクライアント側で実装が必要
+</details>
