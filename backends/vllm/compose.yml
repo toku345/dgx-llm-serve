@@ -258,3 +258,37 @@ services:
       - image=1
       - --trust-remote-code
       - --enforce-eager
+
+  # --- qwen36 プロファイル: Qwen3.6-35B-A3B-FP8 (精選後の常用モデル) ---
+  vllm-qwen36:
+    <<: *common
+    # vLLM >= 0.19.0 が Qwen3.6 対応。ARM64/CUDA 13.0/Ubuntu 24.04 フル修飾タグで明示 pin
+    image: vllm/vllm-openai:v0.19.0-aarch64-cu130-ubuntu2404
+    profiles: ["qwen36"]
+    command:
+      - /app/model/Qwen/Qwen3.6-35B-A3B-FP8
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --served-model-name
+      - Qwen/Qwen3.6-35B-A3B-FP8
+      - --tensor-parallel-size
+      - "1"
+      - --gpu-memory-utilization
+      - "0.8"
+      - --max-model-len
+      - "131072"
+      - --max-num-seqs
+      - "4"
+      - --max-num-batched-tokens
+      - "2048"
+      - --dtype
+      - auto
+      - --kv-cache-dtype
+      - auto
+      - --reasoning-parser
+      - qwen3
+      - --enable-auto-tool-choice
+      - --tool-call-parser
+      - qwen3_coder
