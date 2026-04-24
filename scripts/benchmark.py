@@ -1,16 +1,12 @@
 """LLM inference benchmark runner using AIPerf.
 
 Wraps `aiperf profile` to run standardized benchmarks against
-OpenAI-compatible endpoints (vLLM, TRT-LLM, NIM).
+OpenAI-compatible endpoints (vLLM).
 
 Usage:
     uv run scripts/benchmark.py \
-        --model Qwen/Qwen3-Coder-30B-A3B-Instruct \
+        --model Qwen/Qwen3.6-35B-A3B-FP8 \
         --concurrency 1,2,4
-
-    uv run scripts/benchmark.py \
-        --model nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 \
-        --port 8001
 """
 
 from __future__ import annotations

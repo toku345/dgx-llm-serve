@@ -6,111 +6,67 @@ vLLM を使用した LLM サービング環境。
 
 | プロファイル | モデル | 特徴 |
 |-------------|--------|------|
-| qwen | Qwen3-Coder-30B-A3B-Instruct | ツール呼び出し対応 |
-| qwen35 | Qwen3.5-35B-A3B-FP8 | Gated DeltaNet + MoE, FP8 量子化, thinking モード（reasoning_content 分離）, テキスト専用モード（ビジョン無効化） |
-| nemotron | NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 | 高速推論 |
-| nemotron-vl | NVIDIA-Nemotron-Nano-12B-v2-VL | マルチモーダル（画像対応）|
-| multi | Qwen3-Coder + Nemotron 同時起動 | OpenResty プロキシで単一ポート |
+| qwen36 | Qwen3.6-35B-A3B-FP8 | MoE 35B total / 3B active, FP8 量子化, thinking モード（`reasoning_content` 分離）, tool calling（`qwen3_coder` parser）, 128K context |
 
 ## 起動
 
 ```bash
-# Qwen3-Coder (ツール呼び出し対応)
-docker compose --profile qwen up
-
-# Qwen3.5 (thinking モード対応)
-docker compose --profile qwen35 up
-
-# Nemotron
-docker compose --profile nemotron up
-
-# Nemotron-VL (マルチモーダル)
-docker compose --profile nemotron-vl up
-
-# マルチモデル (Qwen3-Coder + Nemotron を単一ポートで同時起動)
-docker compose --profile multi up
+docker compose --profile qwen36 up
 ```
 
-## マルチモデル起動
+初回起動はモデルロードに数分かかります。`curl http://localhost:8000/health` が 200 を返せば起動完了です。
 
-`multi` プロファイルは OpenResty プロキシ経由で2モデルをポート 8000 に統合します。
-リクエストボディの `model` フィールドで自動ルーティングされます。
-
-| モデル | GPU メモリ | ルーティング条件 |
-|--------|-----------|-----------------|
-| Qwen3-Coder-30B-A3B (bf16) | 50% | `model` に "qwen" を含む |
-| Nemotron-30B-A3B (NVFP4) | 25% | `model` に "nemotron" を含む |
+## モデル重みのダウンロード
 
 ```bash
-# 利用可能なモデル一覧
-curl http://localhost:8000/v1/models
-
-# Qwen3-Coder
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "Qwen/Qwen3-Coder-30B-A3B-Instruct", "messages": [{"role": "user", "content": "Hello"}]}'
-
-# Nemotron
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4", "messages": [{"role": "user", "content": "Hello"}]}'
+# 初回のみ（約 36 GiB）
+uv tool install "huggingface_hub[cli]"
+hf download Qwen/Qwen3.6-35B-A3B-FP8 \
+  --local-dir ~/model_weights/Qwen/Qwen3.6-35B-A3B-FP8
 ```
 
-### トラブルシューティング
+## API テスト
 
-- **503 unhealthy**: 両バックエンドの起動完了を待ってください（初回は数分かかります）
-- **404 unknown model**: `model` フィールドに "qwen" または "nemotron" を含む正しいモデル名を指定してください
-- **GPU OOM**: `--gpu-memory-utilization` を各サービスで調整してください
-- **ツール呼び出し**: multi プロファイルでは Qwen3-Coder のツール呼び出し（`--tool-call-parser`）は無効です。ドライバ 590+ に更新後、両サービスを 26.01 イメージに統一すると有効化できます
+```bash
+# 通常 chat
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "Qwen/Qwen3.6-35B-A3B-FP8", "messages": [{"role": "user", "content": "Hello"}]}'
 
-### Forward Compat 制約（ドライバ 580）
-
-ドライバ 580 は CUDA 13.0.2 をネイティブサポートし、CUDA 13.1 (26.01) は Forward Compat で **1 コンテナのみ** 同時実行可能です。
-
-- multi プロファイルは Qwen (25.11 / CUDA 13.0.2) + Nemotron (26.01 / CUDA 13.1) の組み合わせでこの制約を回避しています
-- 26.01 × 2 コンテナ（例: Qwen3-FP4 + Nemotron）は、Nemotron の flashinfer CUTLASS バックエンド初期化に失敗するため **不可**
-- ドライバ 590+ へのアップデートにより CUDA 13.1 がネイティブ対応になれば、この制約は解消される見込み
+# Thinking モード（`reasoning_content` に思考プロセス分離）
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "messages": [{"role": "user", "content": "Explain why the sky is blue."}],
+    "max_tokens": 1000
+  }' | jq '.choices[0].message | {content, reasoning_content}'
+```
 
 ## 設定パラメータ
 
 | パラメータ | 値 | 説明 |
 |-----------|-----|------|
-| `--gpu-memory-utilization` | 0.9 | GPU メモリ使用率 |
-| `--max-model-len` | 32768 | 最大コンテキスト長 |
-| `--max-num-seqs` | 4 | 最大並行シーケンス数 |
-| `--tensor-parallel-size` | 1 | テンソル並列数 |
+| `image` | `vllm/vllm-openai:v0.19.0-aarch64-cu130-ubuntu2404` | ARM64 / CUDA 13.0 / Ubuntu 24.04 明示 pin |
+| `--gpu-memory-utilization` | `0.8` | 重み ~36 GiB + KV cache + 余裕 |
+| `--max-model-len` | `131072` | 128K context（公式 262K は TP=8 前提） |
+| `--max-num-seqs` | `4` | 最大並行シーケンス数 |
+| `--tensor-parallel-size` | `1` | テンソル並列数 |
+| `--reasoning-parser` | `qwen3` | thinking を `reasoning_content` に分離 |
+| `--tool-call-parser` | `qwen3_coder` | Qwen3 系 tool calling parser |
+
+## トラブルシューティング
+
+- **起動が遅い**: 初回は数分かかります。`docker logs vllm-vllm-qwen36-1 -f` で進捗確認
+- **GPU OOM**: `--gpu-memory-utilization` を 0.7 まで下げる、または `--max-model-len` を 65536 に縮小
+- **404 unknown model**: `model` フィールドに `Qwen/Qwen3.6-35B-A3B-FP8` を指定
+- **cuda capability 12.1 警告**: PyTorch 公式最大 12.0 を超過する警告が出るが、互換動作します
 
 ## ツール呼び出し
-
-Qwen3-Coder でツール呼び出しを使用する場合:
-
-```bash
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-    "messages": [{"role": "user", "content": "What is the weather in Tokyo?"}],
-    "tools": [{
-      "type": "function",
-      "function": {
-        "name": "get_weather",
-        "description": "Get weather information",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "location": {"type": "string"}
-          },
-          "required": ["location"]
-        }
-      }
-    }],
-    "tool_choice": "auto"
-  }'
-```
 
 詳細は [ツール呼び出しガイド](../../docs/tool-calling.md) を参照。
 
 ## 環境要件
 
 - NVIDIA GPU + nvidia-container-toolkit
-- モデルウェイト: `~/model_weights/` に配置
+- モデルウェイト: `~/model_weights/Qwen/Qwen3.6-35B-A3B-FP8/` に配置

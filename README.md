@@ -13,46 +13,42 @@
 
 - Lenovo ThinkStation PGX
 
-## バックエンド一覧
+## バックエンド
 
 | バックエンド | 技術 | 対応モデル | 特徴 |
 |-------------|------|-----------|------|
-| [trtllm](backends/trtllm/) | TensorRT-LLM | Qwen3-FP4, Nemotron-NVFP4 | マルチモデル同時起動対応 |
-| [vllm](backends/vllm/) | vLLM | Qwen3-Coder, Nemotron, Nemotron-VL | ツール呼び出し対応 |
-| [nim](backends/nim/) | NVIDIA NIM | Qwen3-32B, Llama-3.1-8B, Nemotron-Nano | NGC マネージドイメージ |
+| [vllm](backends/vllm/) | vLLM | Qwen3.6-35B-A3B-FP8 | MoE 3B Active、ツール呼び出し、thinking 分離、128K context |
+
+AI コーディングエージェント / Web サイト解析など多用途を単一モデルでカバーする精選構成。
 
 ## 前提条件
 
 - DGX Spark または OEM 機（GB10 Grace Blackwell）
 - Docker + Docker Compose
 - NVIDIA Container Toolkit
-- モデルウェイト: `~/model_weights/` に配置（NIM を除く）
+- モデルウェイト: `~/model_weights/Qwen/Qwen3.6-35B-A3B-FP8/` に配置
 
 ## クイックスタート
 
 ```bash
-# TensorRT-LLM (Qwen3-FP4 単独)
-cd backends/trtllm && docker compose --profile qwen up
+# モデル重みのダウンロード（初回のみ、約 36 GiB）
+uv tool install "huggingface_hub[cli]"
+hf download Qwen/Qwen3.6-35B-A3B-FP8 \
+  --local-dir ~/model_weights/Qwen/Qwen3.6-35B-A3B-FP8
 
-# TRT-LLM マルチモデル (Qwen3-FP4 + Nemotron-NVFP4 を単一ポートで同時起動)
-cd backends/trtllm && docker compose --profile multi up
-
-# vLLM (Qwen3-Coder)
-cd backends/vllm && docker compose --profile qwen up
-
-# NVIDIA NIM (Qwen3-32B)
-cd backends/nim && docker compose up
+# 起動
+cd backends/vllm && docker compose --profile qwen36 up
 ```
 
 ## API テスト
 
-全バックエンドで OpenAI 互換 API がポート 8000 で公開されます。
+OpenAI 互換 API がポート 8000 で公開されます。
 
 ```bash
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "<MODEL_NAME>",
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
     "messages": [{"role": "user", "content": "Hello"}],
     "max_tokens": 128
   }'
@@ -62,6 +58,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 - [Thinking モード](docs/thinking-mode.md) - Qwen3 の思考プロセス出力
 - [ツール呼び出し](docs/tool-calling.md) - vLLM でのツール呼び出し設定とデバッグ
+- [モデル精選設計書](docs/plans/2026-04-24-model-curation-design.md) - 精選の経緯と判断
 
 ## セキュリティに関する注意事項
 
@@ -74,7 +71,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ### LAN 内の他デバイスからアクセスする場合
 
-各 `compose.yml` のポート設定を変更してください:
+`backends/vllm/compose.yml` のポート設定を変更してください:
 
 ```yaml
 # 変更前（ローカルのみ）
@@ -89,9 +86,3 @@ ports:
 **注意**: LAN 公開時は以下を確認してください:
 - ルーターでポート 8000 への外部（インターネット）アクセスがブロックされていること
 - LAN 内の信頼できるデバイスのみがアクセスすること
-
-### リモートコード実行に関する注意
-
-vLLM / TRT-LLM の Nemotron モデル（`--trust-remote-code` / `--trust_remote_code` フラグ）は HuggingFace からのコード実行を許可しています:
-- サプライチェーン攻撃のリスクが存在します
-- モデル初回ダウンロード時に `~/.cache/huggingface` 内のコードを確認することを推奨します
