@@ -1,5 +1,5 @@
 x-common: &common
-  restart: unless-stopped
+  restart: on-failure:3
   ipc: host
   ports:
     - "127.0.0.1:8000:8000"
