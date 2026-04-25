@@ -1,5 +1,4 @@
 x-common: &common
-  image: nvcr.io/nvidia/vllm:26.01-py3
   restart: unless-stopped
   ipc: host
   ports:
