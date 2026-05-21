@@ -3,7 +3,7 @@ name = "dgx-llm-serve"
 version = "0.1.0"
 description = "LLM inference backends for DGX Spark (TensorRT-LLM, vLLM, NVIDIA NIM)"
 requires-python = ">=3.13"
-dependencies = ["aiperf>=0.5.0,<1.0"]
+dependencies = ["aiperf>=0.8.0,<1.0"]
 
 [tool.uv]
 # CVE-2025-67221: orjson<3.11.6 lacks recursion depth limits for nested JSON.
