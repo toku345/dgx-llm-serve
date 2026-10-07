@@ -27,6 +27,7 @@
 - Docker + Docker Compose
 - NVIDIA Container Toolkit
 - モデルウェイト: `~/model_weights/` に配置（NIM を除く）
+- ベンチマーク用: Python 3.13 + uv（AIPerf 0.13.0 は Python 3.14 未対応）
 
 ## クイックスタート
 
