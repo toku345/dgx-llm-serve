@@ -1,5 +1,5 @@
 x-common: &common
-  image: nvcr.io/nvidia/vllm:26.01-py3
+  image: nvcr.io/nvidia/vllm:26.03-py3
   restart: unless-stopped
   ipc: host
   ports:
@@ -188,7 +188,7 @@ services:
 
   vllm-multi-nemotron:
     <<: *common
-    # NemotronH + NVFP4 は 26.01 必須。ドライバ 580 では Forward Compat を独占使用
+    # NemotronH + NVFP4 は 26.03 (CUDA 13.2)。ドライバ 580 では Forward Compat を独占使用
     profiles: ["multi"]
     ports: []
     healthcheck:
